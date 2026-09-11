@@ -1,24 +1,44 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { ArrowRight, BriefcaseBusiness, FileSearch, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScoreRing } from "@/components/score-ring";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "AI Career Copilot | Resume & Interview Prep" },
+      { name: "description", content: "Analyze your resume, match real jobs, and practice personalized interviews with AI Career Copilot." },
+      { property: "og:title", content: "AI Career Copilot" },
+      { property: "og:description", content: "Your career, decoded in minutes." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+function Landing() {
+  return <div className="min-h-screen bg-canvas text-ink">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-card/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link to="/" className="flex items-center gap-2.5"><BrandMark /><span className="font-display text-[15px] font-semibold tracking-tight">AI Career Copilot</span></Link>
+        <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex"><a href="#features" className="transition hover:text-foreground">Features</a><a href="#how-it-works" className="transition hover:text-foreground">How it works</a><a href="#start" className="transition hover:text-foreground">Get started</a></nav>
+        <div className="flex items-center gap-3"><Link to="/auth" className="hidden text-sm font-medium text-muted-foreground transition hover:text-foreground sm:block">Log in</Link><Button asChild variant="secondary" className="bg-ink text-background hover:bg-ink/85"><Link to="/auth">Start free</Link></Button></div>
+      </div>
+    </header>
+    <main className="mx-auto max-w-7xl px-6">
+      <section className="grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
+        <div><span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary"><span className="size-1.5 rounded-full bg-primary" /> AI-powered career clarity</span><h1 className="mt-5 max-w-xl font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">Your career, <span className="bg-ai-gradient bg-clip-text text-transparent">decoded</span> in minutes.</h1><p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">Analyze your resume, match real job descriptions, and rehearse personalized interviews — all in one calm, focused workspace.</p><div className="mt-8 flex flex-wrap items-center gap-4"><Button asChild size="lg" className="bg-ai-gradient shadow-ai hover:opacity-90"><Link to="/auth">Analyze My Resume <ArrowRight /></Link></Button><a href="#how-it-works" className="inline-flex h-10 items-center rounded-md border border-border bg-card px-5 text-sm font-semibold text-foreground transition hover:bg-accent">See how it works</a></div><div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground"><div><span className="font-semibold text-foreground">Resume-first</span> career prep</div><div className="h-4 w-px bg-border" /><div>Private by design</div></div></div>
+        <div className="relative"><div className="absolute -inset-4 -z-10 rounded-[2rem] bg-ai-soft blur-xl" /><div className="rounded-2xl border border-border bg-card p-6 shadow-ai"><div className="flex items-center justify-between border-b border-border pb-4"><div><p className="text-xs font-medium text-muted-foreground">Your career snapshot</p><p className="font-display text-lg font-semibold">Ready when you are</p></div><div className="grid size-10 place-items-center rounded-full bg-ai-gradient text-sm font-bold text-primary-foreground">AI</div></div><div className="mt-5 grid grid-cols-3 gap-4"><ScoreRing value={null} label="Readiness" /><ScoreRing value={null} label="Resume" tone="accent" /><ScoreRing value={null} label="Job match" tone="violet" /></div><div className="mt-4 rounded-xl border border-border bg-ai-soft p-4"><p className="text-sm font-semibold">Your next best step</p><p className="mt-1 text-sm text-muted-foreground">Upload a resume to uncover your strengths, gaps, and highest-impact improvements.</p><Button asChild variant="link" className="mt-2 h-auto p-0"><Link to="/auth">Start with a resume <ArrowRight /></Link></Button></div></div></div>
+      </section>
+      <section id="features" className="py-16 lg:py-20"><div className="max-w-2xl"><h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Everything you need to land the role</h2><p className="mt-3 text-lg text-muted-foreground">One copilot for your resume, applications, and interviews.</p></div><div className="mt-10 grid gap-5 md:grid-cols-3"><Feature icon={FileSearch} title="Resume Analyzer" text="Upload a PDF and get ATS-aware scoring, detected skills, gaps, and specific suggestions." /><Feature icon={BriefcaseBusiness} title="Job Match" text="Compare your resume to any job description and see the skills and keywords that matter most." /><Feature icon={Sparkles} title="Interview Assistant" text="Generate personalized technical, HR, project, or DSA questions with suggested answers." /></div></section>
+      <section id="how-it-works" className="border-t border-border py-16 lg:py-20"><div className="grid items-center gap-12 lg:grid-cols-2"><div><h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">A clearer path from application to interview</h2><div className="mt-8 space-y-6"><Step number="1" title="Upload your resume" text="Drop in a PDF and securely extract the content you want to improve." /><Step number="2" title="See what employers see" text="Understand your ATS score, strengths, missing skills, and role alignment." /><Step number="3" title="Practice with context" text="Rehearse questions built around your experience and the role you want." /></div></div><div className="rounded-2xl border border-border bg-ai-soft p-6"><div className="flex items-center justify-between"><p className="font-display text-sm font-semibold">Your improvement plan</p><span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-semibold text-success">Personalized</span></div><ul className="mt-4 space-y-3 text-sm"><li className="flex gap-3 rounded-xl bg-card p-3 shadow-sm"><span className="mt-1 size-2 shrink-0 rounded-full bg-primary" /><span>Add measurable impact to your project bullets.</span></li><li className="flex gap-3 rounded-xl bg-card p-3 shadow-sm"><span className="mt-1 size-2 shrink-0 rounded-full bg-ai-accent" /><span>Surface the keywords your target role expects.</span></li><li className="flex gap-3 rounded-xl bg-card p-3 shadow-sm"><span className="mt-1 size-2 shrink-0 rounded-full bg-brand-strong" /><span>Turn your experience into confident interview stories.</span></li></ul></div></div></section>
+      <section id="start" className="pb-20"><div className="overflow-hidden rounded-3xl bg-ai-gradient px-8 py-14 text-center text-primary-foreground shadow-ai"><h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Ready to boost your career readiness?</h2><p className="mx-auto mt-3 max-w-md opacity-80">Start with one resume. Leave with a plan you can act on.</p><Button asChild variant="secondary" size="lg" className="mt-7 bg-card text-primary hover:bg-card/90"><Link to="/auth">Analyze My Resume <ArrowRight /></Link></Button></div></section>
+    </main>
+    <footer className="border-t border-border"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row"><Link to="/" className="flex items-center gap-2"><BrandMark small /><span className="font-display font-semibold text-foreground">AI Career Copilot</span></Link><p>Your private workspace for better career decisions.</p></div></footer>
+  </div>;
 }
+
+function Feature({ icon: Icon, title, text }: { icon: typeof FileSearch; title: string; text: string }) { return <div className="group rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:border-primary/30 hover:shadow-ai"><div className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-5" /></div><h3 className="mt-4 font-display text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p></div>; }
+function Step({ number, title, text }: { number: string; title: string; text: string }) { return <div className="flex gap-4"><div className="grid size-9 shrink-0 place-items-center rounded-full bg-ai-gradient text-sm font-bold text-primary-foreground">{number}</div><div><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{text}</p></div></div>; }
+function BrandMark({ small = false }: { small?: boolean }) { return <div className={`${small ? "size-7 text-[10px]" : "size-9 text-xs"} grid place-items-center rounded-xl bg-ai-gradient font-extrabold text-primary-foreground shadow-ai`}>AI</div>; }
