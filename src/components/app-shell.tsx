@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { BarChart3, BriefcaseBusiness, FileSearch, History, LogOut, Menu, Sparkles, UserRound, X } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,12 +17,15 @@ const navItems = [
 export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const current = navItems.find((item) => location.pathname === item.to)?.label ?? "Dashboard";
 
   async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
-    await navigate({ to: "/" });
+    await navigate({ to: "/auth", replace: true });
   }
 
   return (
