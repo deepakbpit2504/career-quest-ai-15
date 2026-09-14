@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Sign in | AI Career Copilot" }, { name: "description", content: "Sign in to your AI Career Copilot workspace." }, { property: "og:title", content: "Sign in | AI Career Copilot" }, { property: "og:description", content: "Sign in to analyze resumes and prepare for interviews." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: AuthPage,
 });
