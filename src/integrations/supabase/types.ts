@@ -136,12 +136,16 @@ export type Database = {
           ats_score: number
           created_at: string
           detected_skills: Json
+          education_summary: string
+          experience_summary: string
           id: string
           missing_skills: Json
           overall_score: number
           resume_id: string
+          soft_skills: Json
           strengths: Json
           suggestions: Json
+          technical_skills: Json
           updated_at: string
           user_id: string
           weaknesses: Json
@@ -150,12 +154,16 @@ export type Database = {
           ats_score?: number
           created_at?: string
           detected_skills?: Json
+          education_summary?: string
+          experience_summary?: string
           id?: string
           missing_skills?: Json
           overall_score?: number
           resume_id: string
+          soft_skills?: Json
           strengths?: Json
           suggestions?: Json
+          technical_skills?: Json
           updated_at?: string
           user_id: string
           weaknesses?: Json
@@ -164,12 +172,16 @@ export type Database = {
           ats_score?: number
           created_at?: string
           detected_skills?: Json
+          education_summary?: string
+          experience_summary?: string
           id?: string
           missing_skills?: Json
           overall_score?: number
           resume_id?: string
+          soft_skills?: Json
           strengths?: Json
           suggestions?: Json
+          technical_skills?: Json
           updated_at?: string
           user_id?: string
           weaknesses?: Json
