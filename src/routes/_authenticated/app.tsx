@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, FileSearch, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ function Dashboard() {
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Your career snapshot</h1>
           <p className="mt-1 text-sm text-muted-foreground">Complete one analysis to see personalized readiness signals here.</p>
         </div>
-        <Button asChild className="bg-ai-gradient"><a href="/app/resume">Analyze My Resume <ArrowRight /></a></Button>
+         <Button asChild className="bg-ai-gradient"><Link to="/app/resume">Analyze My Resume <ArrowRight /></Link></Button>
       </div>
       <div className="mt-7 grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Metric title="Career readiness" value={readiness} note={readiness ? "Based on your latest work" : "Waiting for your first analysis"} />
@@ -37,7 +37,7 @@ function Dashboard() {
         <section className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
             <div><h2 className="font-display text-base font-semibold">Recent analyses</h2><p className="mt-1 text-sm text-muted-foreground">Your saved career work, in one place.</p></div>
-            <a href="/app/history" className="text-xs font-semibold text-primary">View history</a>
+             <Link to="/app/history" className="text-xs font-semibold text-primary">View history</Link>
           </div>
           {snapshot && snapshot.analyses.length + snapshot.matches.length + snapshot.interviews.length === 0 ? (
             <EmptyState text="Your saved analyses will appear here after you run your first action." />
@@ -60,5 +60,5 @@ function Dashboard() {
 }
 function Metric({ title, value, note }: { title: string; value: number | null; note: string }) { return <div className="rounded-2xl border border-border bg-card p-4"><p className="text-xs font-medium text-muted-foreground">{title}</p><div className="mt-3 flex items-center justify-center"><ScoreRing value={value} label="" /></div><p className="mt-2 text-center text-[11px] text-muted-foreground">{note}</p></div>; }
 function Recent({ icon: Icon, title, detail }: { icon: typeof FileSearch; title: string; detail: string }) { return <div className="flex items-center gap-3 py-3"><span className="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary"><Icon className="size-4" /></span><div><p className="text-sm font-medium">{title}</p><p className="text-xs text-muted-foreground">{detail}</p></div></div>; }
-function Quick({ href, icon: Icon, text }: { href: string; icon: typeof FileSearch; text: string }) { return <a href={href} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition hover:-translate-y-0.5 hover:border-primary/30"><Icon className="size-4 text-primary" />{text}<ArrowRight className="ml-auto size-4 text-muted-foreground" /></a>; }
+ function Quick({ to, icon: Icon, text }: { to: "/app/resume" | "/app/job-match" | "/app/interview"; icon: typeof FileSearch; text: string }) { return <Link to={to} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 text-sm font-medium transition hover:-translate-y-0.5 hover:border-primary/30"><Icon className="size-4 text-primary" />{text}<ArrowRight className="ml-auto size-4 text-muted-foreground" /></Link>; }
 function EmptyState({ text }: { text: string }) { return <p className="mt-8 rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">{text}</p>; }
