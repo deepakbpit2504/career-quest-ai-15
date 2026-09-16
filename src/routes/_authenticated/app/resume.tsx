@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
@@ -42,4 +42,4 @@ function Summary({ title, text }: { title: string; text: string }) { return <div
 function ResultGroup({ title, items, tone = "default" }: { title: string; items: string[]; tone?: "primary" | "warning" | "default" }) { return <div className="mt-6"><h3 className="text-sm font-semibold">{title}</h3><div className="mt-2 flex flex-wrap gap-2">{items.length ? items.map((item) => <span key={item} className={`rounded-md px-2.5 py-1 text-xs ${tone === "primary" ? "bg-primary/10 text-primary" : tone === "warning" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground"}`}>{item}</span>) : <span className="text-sm text-muted-foreground">No items returned.</span>}</div></div>; }
 function Score({ label, value }: { label: string; value: number }) { return <div className="rounded-xl bg-ai-soft p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-display text-2xl font-bold">{value}</p></div>; }
 function Bullet({ title, text }: { title: string; text: string }) { return <div className="flex gap-3"><span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" /><div><p className="text-sm font-semibold">{title}</p><p className="mt-1 text-sm text-muted-foreground">{text}</p></div></div>; }
-function Header({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) { return <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">{eyebrow}</p><h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{title}</h1><p className="mt-2 text-muted-foreground">{text}</p></div>; }
+ function Header({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) { return <div><Link to="/app" className="text-sm font-semibold text-primary">← Back to dashboard</Link><p className="mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-primary">{eyebrow}</p><h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{title}</h1><p className="mt-2 text-muted-foreground">{text}</p></div>; }
