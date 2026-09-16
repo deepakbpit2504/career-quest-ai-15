@@ -161,7 +161,7 @@ export const analyzeResumeWithAi = createServerFn({ method: "POST" })
     const { data: saved, error } = await context.supabase.from("resume_analyses").insert({
       user_id: context.userId,
       resume_id: data.resumeId,
-      overall_score: result.overallScore,
+       overall_score: result.analysis.overallScore,
       ats_score: result.analysis.atsScore,
       detected_skills: result.analysis.detectedSkills,
       technical_skills: result.analysis.technicalSkills,

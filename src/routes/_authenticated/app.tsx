@@ -52,7 +52,7 @@ function Dashboard() {
         <section className="rounded-2xl border border-primary/20 bg-ai-soft p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Quick actions</p>
           <h2 className="mt-2 font-display text-xl font-semibold">Build momentum</h2>
-          <div className="mt-5 space-y-2"><Quick href="/app/resume" icon={FileSearch} text="Analyze a resume" /><Quick href="/app/job-match" icon={BriefcaseBusiness} text="Match a job description" /><Quick href="/app/interview" icon={Sparkles} text="Practice an interview" /></div>
+          <div className="mt-5 space-y-2"><Quick to="/app/resume" icon={FileSearch} text="Analyze a resume" /><Quick to="/app/job-match" icon={BriefcaseBusiness} text="Match a job description" /><Quick to="/app/interview" icon={Sparkles} text="Practice an interview" /></div>
         </section>
       </div>
     </div>
