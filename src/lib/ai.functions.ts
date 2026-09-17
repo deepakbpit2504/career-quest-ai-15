@@ -175,8 +175,9 @@ async function runGemini(prompt: string): Promise<string> {
   if (!output.trim()) throw new Error("The AI service returned an empty analysis.");
   return output.trim();
 }
-
 function parseJson<T>(text: string, schema: z.ZodType<T>): T {
+  console.log("RAW AI RESPONSE:", text);
+
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/i, "")
@@ -192,9 +193,34 @@ function parseJson<T>(text: string, schema: z.ZodType<T>): T {
 
     if (start < 0 || end <= start) {
       throw new Error(
-        "The AI response was not valid JSON. Please try again."
+        `AI did not return JSON. Raw response: ${text.slice(0, 500)}`
       );
     }
+
+    try {
+      parsed = JSON.parse(cleaned.slice(start, end + 1));
+    } catch {
+      throw new Error(
+        `AI returned invalid JSON. Raw response: ${text.slice(0, 500)}`
+      );
+    }
+  }
+
+  const result = schema.safeParse(parsed);
+
+  if (!result.success) {
+    console.error("AI JSON:", JSON.stringify(parsed, null, 2));
+    console.error("ZOD ERROR:", result.error.format());
+
+    throw new Error(
+      `AI response does not match the required format: ${result.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join("; ")}`
+    );
+  }
+
+  return result.data;
+}
 
     try {
       parsed = JSON.parse(cleaned.slice(start, end + 1));
