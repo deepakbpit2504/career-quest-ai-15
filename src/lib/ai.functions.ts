@@ -175,9 +175,9 @@ async function runGemini(prompt: string): Promise<string> {
   if (!output.trim()) throw new Error("The AI service returned an empty analysis.");
   return output.trim();
 }
-function parseJson<T>(text: string, schema: z.ZodType<T>): T {
-  console.log("RAW AI RESPONSE:", text);
 
+
+function parseJson<T>(text: string, schema: z.ZodType<T>): T {
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/i, "")
@@ -192,54 +192,20 @@ function parseJson<T>(text: string, schema: z.ZodType<T>): T {
     const end = cleaned.lastIndexOf("}");
 
     if (start < 0 || end <= start) {
-      throw new Error(
-        `AI did not return JSON. Raw response: ${text.slice(0, 500)}`
-      );
+      throw new Error("The AI returned an unreadable analysis. Please try again.");
     }
 
     try {
       parsed = JSON.parse(cleaned.slice(start, end + 1));
     } catch {
-      throw new Error(
-        `AI returned invalid JSON. Raw response: ${text.slice(0, 500)}`
-      );
+      throw new Error("The AI returned an unreadable analysis. Please try again.");
     }
   }
 
   const result = schema.safeParse(parsed);
 
   if (!result.success) {
-    console.error("AI JSON:", JSON.stringify(parsed, null, 2));
-    console.error("ZOD ERROR:", result.error.format());
-
-    throw new Error(
-      `AI response does not match the required format: ${result.error.issues
-        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-        .join("; ")}`
-    );
-  }
-
-  return result.data;
-}
-
-    try {
-      parsed = JSON.parse(cleaned.slice(start, end + 1));
-    } catch {
-      throw new Error(
-        "The AI response contained invalid JSON. Please try again."
-      );
-    }
-  }
-
-  const result = schema.safeParse(parsed);
-
-  if (!result.success) {
-    console.error("AI response validation failed:", result.error);
-    console.error("AI response:", parsed);
-
-    throw new Error(
-      "The AI returned an unexpected response format. Please try again."
-    );
+    throw new Error("The AI returned an unreadable analysis. Please try again.");
   }
 
   return result.data;
@@ -417,6 +383,7 @@ ${jobDescription || "None provided"}
 
     return { analysis: saved, match };
   });
+
 export const analyzeJobMatchWithAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ resumeId: z.string().uuid(), resumeText: z.string().min(40), jobDescription: z.string().min(40) }).parse(input))
