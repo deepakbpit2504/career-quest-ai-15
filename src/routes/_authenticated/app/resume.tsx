@@ -2,12 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCareerSnapshot } from "@/lib/career.functions";
 import { analyzeResumeWithAi } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
