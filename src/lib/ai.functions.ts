@@ -177,19 +177,46 @@ async function runGemini(prompt: string): Promise<string> {
 }
 
 function parseJson<T>(text: string, schema: z.ZodType<T>): T {
-  const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  let parsed: unknown;
+
   try {
-    return schema.parse(JSON.parse(cleaned));
+    parsed = JSON.parse(cleaned);
   } catch {
     const start = cleaned.indexOf("{");
     const end = cleaned.lastIndexOf("}");
-    if (start < 0 || end <= start) throw new Error("The AI returned an unreadable analysis. Please try again.");
+
+    if (start < 0 || end <= start) {
+      throw new Error(
+        "The AI response was not valid JSON. Please try again."
+      );
+    }
+
     try {
-      return schema.parse(JSON.parse(cleaned.slice(start, end + 1)));
+      parsed = JSON.parse(cleaned.slice(start, end + 1));
     } catch {
-      throw new Error("The AI returned an unreadable analysis. Please try again.");
+      throw new Error(
+        "The AI response contained invalid JSON. Please try again."
+      );
     }
   }
+
+  const result = schema.safeParse(parsed);
+
+  if (!result.success) {
+    console.error("AI response validation failed:", result.error);
+    console.error("AI response:", parsed);
+
+    throw new Error(
+      "The AI returned an unexpected response format. Please try again."
+    );
+  }
+
+  return result.data;
 }
 
 export const analyzeResumeWithAi = createServerFn({ method: "POST" })
