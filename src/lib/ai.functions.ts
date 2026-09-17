@@ -41,49 +41,103 @@ const ResumeReviewSchema = z.object({
 
 async function runGemini(prompt: string): Promise<string> {
   const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("AI service is not configured yet.");
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": key,
-      "X-Lovable-AIG-SDK": "fetch",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3.8-flash",
-      stream: true,
-      messages: [
-        { role: "system", content: "You are a precise career coach. Return only valid JSON matching the requested schema. Do not use markdown fences." },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
+  if (!key) {
+    throw new Error("AI service is not configured yet.");
+  }
+
+  const response = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": key,
+        "X-Lovable-AIG-SDK": "fetch",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3.8-flash",
+        stream: false,
+        response_format: {
+          type: "json_object",
+        },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a precise career coach. Return ONLY one valid JSON object. Do not use markdown fences or any text outside the JSON object.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
+    }
+  );
 
   if (!response.ok) {
     const body = await response.text();
+
     let message = body;
+
     try {
-      const parsed = JSON.parse(body) as { error?: { message?: string }; message?: string };
+      const parsed = JSON.parse(body) as {
+        error?: { message?: string };
+        message?: string;
+      };
+
       message = parsed.error?.message ?? parsed.message ?? body;
     } catch {
-      // Keep the gateway's plain-text response when it is not JSON.
+      // Keep plain-text response
     }
+
     if (response.status === 402) {
-      throw new Error(message || "AI credits are unavailable. Please ask the workspace owner to add credits.");
+      throw new Error(
+        message ||
+          "AI credits are unavailable. Please ask the workspace owner to add credits."
+      );
     }
+
     if (response.status === 403) {
-      throw new Error(message || "AI analysis is currently unavailable for this workspace.");
+      throw new Error(
+        message || "AI analysis is currently unavailable for this workspace."
+      );
     }
+
     if (response.status === 429) {
-      throw new Error("AI analysis is busy right now. Please wait a moment and try again.");
+      throw new Error(
+        "AI analysis is busy right now. Please wait a moment and try again."
+      );
     }
+
     if (response.status >= 500) {
-      throw new Error("The AI service is temporarily unavailable. Please try again shortly.");
+      throw new Error(
+        "The AI service is temporarily unavailable. Please try again shortly."
+      );
     }
-    throw new Error(message || `AI request failed with status ${response.status}.`);
+
+    throw new Error(
+      message || `AI request failed with status ${response.status}.`
+    );
   }
-  if (!response.body) throw new Error("AI response was empty.");
+
+  const result = (await response.json()) as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+      };
+    }>;
+  };
+
+  const output = result.choices?.[0]?.message?.content?.trim();
+
+  if (!output) {
+    throw new Error("The AI service returned an empty analysis.");
+  }
+
+  return output;
+}
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
