@@ -194,60 +194,176 @@ function parseJson<T>(text: string, schema: z.ZodType<T>): T {
 
 export const analyzeResumeWithAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({
-    resumeId: z.string().uuid(),
-    resumeText: z.string().min(40),
-    jobDescription: z.string().max(20000).optional().default(""),
-  }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        resumeId: z.string().uuid(),
+        resumeText: z.string().min(40),
+        jobDescription: z.string().max(20000).optional().default(""),
+      })
+      .parse(input)
+  )
   .handler(async ({ data, context }) => {
     const { data: resume, error: resumeError } = await context.supabase
       .from("resumes")
       .select("id, extracted_text")
       .eq("id", data.resumeId)
       .maybeSingle();
-    if (resumeError) throw new Error(resumeError.message);
-    if (!resume) throw new Error("That resume is no longer available in your workspace.");
 
-    const resumeText = resume.extracted_text?.trim() || data.resumeText.trim();
-    if (resumeText.length < 40) throw new Error("This resume does not contain enough readable text to analyze.");
+    if (resumeError) throw new Error(resumeError.message);
+
+    if (!resume) {
+      throw new Error(
+        "That resume is no longer available in your workspace."
+      );
+    }
+
+    const resumeText =
+      resume.extracted_text?.trim() || data.resumeText.trim();
+
+    if (resumeText.length < 40) {
+      throw new Error(
+        "This resume does not contain enough readable text to analyze."
+      );
+    }
+
     const jobDescription = data.jobDescription.trim();
-    const result = parseJson(await runGemini(`Analyze this resume for a college student or job seeker. Return JSON only. Score clarity, impact, ATS compatibility, and role readiness. Keep lists concise and actionable. Include technical skills, soft skills, an experience summary, and an education summary. If a job description is included, also compare the resume to it and return a match object; otherwise return match as null.\n\nRESUME:\n${resumeText}\n\nJOB DESCRIPTION (optional):\n${jobDescription || "None provided"}`), ResumeReviewSchema);
-    const { data: saved, error } = await context.supabase.from("resume_analyses").insert({
-      user_id: context.userId,
-      resume_id: data.resumeId,
-       overall_score: result.analysis.overallScore,
-      ats_score: result.analysis.atsScore,
-      detected_skills: result.analysis.detectedSkills,
-      technical_skills: result.analysis.technicalSkills,
-      soft_skills: result.analysis.softSkills,
-      experience_summary: result.analysis.experienceSummary,
-      education_summary: result.analysis.educationSummary,
-      strengths: result.analysis.strengths,
-      weaknesses: result.analysis.weaknesses,
-      missing_skills: result.analysis.missingSkills,
-      suggestions: result.analysis.suggestions,
-    }).select("*").single();
-    if (error) throw new Error(error.message);
-    let match = null;
-    if (jobDescription && result.match) {
-      const { data: savedMatch, error: matchError } = await context.supabase.from("job_matches").insert({
+
+    const prompt = `
+Analyze the following resume for a college student or job seeker.
+
+Return ONLY ONE valid JSON object.
+
+The JSON MUST have exactly this structure:
+
+{
+  "analysis": {
+    "overallScore": 0,
+    "atsScore": 0,
+    "detectedSkills": [],
+    "technicalSkills": [],
+    "softSkills": [],
+    "experienceSummary": "",
+    "educationSummary": "",
+    "strengths": [],
+    "weaknesses": [],
+    "missingSkills": [],
+    "suggestions": []
+  },
+  "match": null
+}
+
+Rules for analysis:
+- overallScore must be a number from 0 to 100.
+- atsScore must be a number from 0 to 100.
+- detectedSkills must be an array of strings.
+- technicalSkills must be an array of strings.
+- softSkills must be an array of strings.
+- experienceSummary must be a string.
+- educationSummary must be a string.
+- strengths must be an array of strings.
+- weaknesses must be an array of strings.
+- missingSkills must be an array of strings.
+- suggestions must be an array of strings.
+- Keep all lists concise and actionable.
+- Do not use snake_case.
+- Do not add extra fields.
+
+If there is NO job description, match MUST be exactly null.
+
+If a job description IS provided, match MUST be:
+
+{
+  "matchPercentage": 0,
+  "matchedSkills": [],
+  "missingSkills": [],
+  "importantKeywords": [],
+  "recommendations": [],
+  "jobTitle": "",
+  "company": null
+}
+
+Rules for match:
+- matchPercentage must be a number from 0 to 100.
+- matchedSkills must be an array of strings.
+- missingSkills must be an array of strings.
+- importantKeywords must be an array of strings.
+- recommendations must be an array of strings.
+- jobTitle must be a string.
+- company must be a string or null.
+- Do not use snake_case.
+- Do not add extra fields.
+
+IMPORTANT:
+- Return ONLY JSON.
+- Do NOT use markdown.
+- Do NOT use code fences.
+- Do NOT include explanations outside the JSON.
+- Use double quotes for all JSON keys and string values.
+- Ensure the JSON is valid and parseable.
+
+RESUME:
+${resumeText}
+
+JOB DESCRIPTION:
+${jobDescription || "None provided"}
+`;
+
+    const result = parseJson(
+      await runGemini(prompt),
+      ResumeReviewSchema
+    );
+
+    const { data: saved, error } = await context.supabase
+      .from("resume_analyses")
+      .insert({
         user_id: context.userId,
         resume_id: data.resumeId,
-        job_title: result.match.jobTitle,
-        company: result.match.company,
-        job_description: jobDescription,
-        match_percentage: result.match.matchPercentage,
-        matched_skills: result.match.matchedSkills,
-        missing_skills: result.match.missingSkills,
-        important_keywords: result.match.importantKeywords,
-        recommendations: result.match.recommendations,
-      }).select("*").single();
+        overall_score: result.analysis.overallScore,
+        ats_score: result.analysis.atsScore,
+        detected_skills: result.analysis.detectedSkills,
+        technical_skills: result.analysis.technicalSkills,
+        soft_skills: result.analysis.softSkills,
+        experience_summary: result.analysis.experienceSummary,
+        education_summary: result.analysis.educationSummary,
+        strengths: result.analysis.strengths,
+        weaknesses: result.analysis.weaknesses,
+        missing_skills: result.analysis.missingSkills,
+        suggestions: result.analysis.suggestions,
+      })
+      .select("*")
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    let match = null;
+
+    if (jobDescription && result.match) {
+      const { data: savedMatch, error: matchError } =
+        await context.supabase
+          .from("job_matches")
+          .insert({
+            user_id: context.userId,
+            resume_id: data.resumeId,
+            job_title: result.match.jobTitle,
+            company: result.match.company,
+            job_description: jobDescription,
+            match_percentage: result.match.matchPercentage,
+            matched_skills: result.match.matchedSkills,
+            missing_skills: result.match.missingSkills,
+            important_keywords: result.match.importantKeywords,
+            recommendations: result.match.recommendations,
+          })
+          .select("*")
+          .single();
+
       if (matchError) throw new Error(matchError.message);
+
       match = savedMatch;
     }
+
     return { analysis: saved, match };
   });
-
 export const analyzeJobMatchWithAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ resumeId: z.string().uuid(), resumeText: z.string().min(40), jobDescription: z.string().min(40) }).parse(input))
