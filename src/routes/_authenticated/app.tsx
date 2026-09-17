@@ -12,12 +12,20 @@ export const Route = createFileRoute("/_authenticated/app")({
 
 function Dashboard() {
   const location = useLocation();
+const [snapshot, setSnapshot] =
+  useState<Awaited<ReturnType<typeof getCareerSnapshot>> | null>(null);
 
-  const [snapshot, setSnapshot] = useState<Awaited<ReturnType<typeof getCareerSnapshot>> | null>(null);
-
-  useEffect(() => {
-    getCareerSnapshot().then(setSnapshot).catch(() => setSnapshot(null));
-  }, []);
+useEffect(() => {
+  getCareerSnapshot()
+    .then((data) => {
+      console.log("CAREER SNAPSHOT:", data);
+      setSnapshot(data);
+    })
+    .catch((error) => {
+      console.error("CAREER SNAPSHOT ERROR:", error);
+      setSnapshot(null);
+    });
+}, []);
 
   if (location.pathname !== "/app") {
     return <Outlet />;
