@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, FileSearch, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,17 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 function Dashboard() {
+  const location = useLocation();
+
   const [snapshot, setSnapshot] = useState<Awaited<ReturnType<typeof getCareerSnapshot>> | null>(null);
-  useEffect(() => { getCareerSnapshot().then(setSnapshot).catch(() => setSnapshot(null)); }, []);
+
+  useEffect(() => {
+    getCareerSnapshot().then(setSnapshot).catch(() => setSnapshot(null));
+  }, []);
+
+  if (location.pathname !== "/app") {
+    return <Outlet />;
+  }
   const latestAnalysis = snapshot?.analyses[0];
   const latestMatch = snapshot?.matches[0];
   const latestInterview = snapshot?.interviews[0];
